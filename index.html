@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Симулятор Времени в Онлайне</title>
+</head>
+<body>
+
+<!-- Кастомное окно сброса прогресса -->
+<div id="confirm-modal" class="game-modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:#ff5252;">Сбросить прогресс?</h3>
+        <p>Вы потеряете всё накопленное время и открытые тайные достижения.</p>
+        <div class="modal-btns">
+            <button class="btn-modal btn-yes" onclick="confirmReset(true)">Да, сбросить</button>
+            <button class="btn-modal btn-no" onclick="closeModal('confirm-modal')">Отмена</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно: Галерея ачивок -->
+<div id="gallery-modal" class="game-modal">
+    <div class="modal-content gallery-content">
+        <h2 style="margin-top:0; color:#4fc3f7; border-bottom:2px solid #4fc3f7; padding-bottom:10px;">Галерея достижений</h2>
+        <div class="achievements-list" id="achievements-container"></div>
+        <button class="btn-modal btn-no" style="margin-top:20px; background:#444;" onclick="closeModal('gallery-modal')">Закрыть</button>
+    </div>
+</div>
+
+<!-- Оверлей уведомления об ачивке (Семерка и карточка С ЗАТЕМНЕНИЕМ ФОНА) -->
+<div id="toast-container">
+    <div class="seven-wrapper">
+        <!-- Левая половинка семерки -->
+        <div class="seven-half seven-left">
+            <div class="seven-shape"></div>
+        </div>
+        <!-- Правая половинка семерки -->
+        <div class="seven-half seven-right">
+            <div class="seven-shape"></div>
+        </div>
+        <!-- Карточка достижения, которая появится между ними -->
+        <div class="toast-card" id="toast-card-content"></div>
+    </div>
+</div>
+
+<!-- Стартовый экран для активации звука и перехода в полный экран -->
+<div id="start-overlay">
+    <h2 style="margin-bottom: 20px;">Добро пожаловать в Симулятор Времени</h2>
+    <p style="color: #aaa; margin-bottom: 25px;">Игра развернется на весь экран со звуком и музыкой</p>
+    <button class="btn-start" onclick="startGame()">Начать игру</button>
+</div>
+
+<!-- Игровой интерфейс -->
+<div class="container">
+    <div class="game-header">
+        <h1>Симулятор Ожидания</h1>
+        <div class="timer" id="timer">00:00:00</div>
+    </div>
+
+    <!-- Кнопка вызова Галереи вместо огромного списка -->
+    <button class="btn-gallery" onclick="openModal('gallery-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Галерея ачивок
+    </button>
+
+    <button class="btn-reset" onclick="openModal('confirm-modal')">Сбросить прогресс</button>
+</div>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: #1e1e24; color: #fff;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; overflow: hidden; position: relative;
+    }
+
+    /* Стартовый экран */
+    #start-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111116;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 9999; text-align: center; padding: 20px; box-sizing: border-box;
+    }
+
+    .btn-start {
+        background: #00e676; color: #1e1e24; border: none; padding: 15px 40px;
+        font-size: 1.5rem; font-weight: bold; border-radius: 30px; cursor: pointer;
+        box-shadow: 0 0 20px rgba(0, 230, 118, 0.4); transition: transform 0.2s, background 0.2s;
+    }
+    .btn-start:hover { background: #00c853; transform: scale(1.05); }
+
+    /* Главный контейнер игры */
+    .container {
+        text-align: center; background: #2a2a35; padding: 30px; border-radius: 15px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 500px; width: 100%;
+        display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+
+    .timer {
+        font-size: 3.5rem; font-weight: bold; color: #00e676;
+        text-shadow: 0 0 15px rgba(0, 230, 118, 0.3); margin: 10px 0;
+    }
+
+    /* Стильная кнопка галереи ачивок */
+    .btn-gallery {
+        background: #4fc3f7; color: #1e1e24; border: none; padding: 12px 30px;
+        font-size: 1.1rem; font-weight: bold; border-radius: 25px; cursor: pointer;
+        display: flex; align-items: center; gap: 10px; transition: background 0.2s, transform 0.2s;
+        box-shadow: 0 4px 15px rgba(79, 195, 247, 0.3);
+    }
+    .btn-gallery:hover { background: #29b6f6; transform: translateY(-2px); }
+    .btn-gallery svg { width: 20px; height: 20px; }
+
+    .btn-reset {
+        background: #ff5252; color: white; border: none; padding: 6px 12px;
+        border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; opacity: 0.7;
+    }
+    .btn-reset:hover { background: #ff1744; opacity: 1; }
+
+    /* Общие стили для модальных окон */
+    .game-modal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10000;
+    }
+    .modal-content {
+        background: #2a2a35; padding: 25px; border-radius: 12px; text-align: center;
+        border: 2px solid #ff5252; max-width: 400px; width: 90%; box-shadow: 0 0 30px rgba(255, 82, 82, 0.2);
+    }
+    .gallery-content { max-width: 750px; width: 90%; border-color: #4fc3f7; max-height: 80vh; display: flex; flex-direction: column; }
+    .modal-btns { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+    .btn-modal { border: none; padding: 10px 25px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+    .btn-yes { background: #ff5252; color: #fff; }
+    .btn-no { background: #555; color: #fff; }
+
+    /* Сетка ачивок внутри галереи */
+    .achievements-list {
+        margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow-y: auto; padding-right: 5px; flex-grow: 1;
+    }
+    @media (max-width: 650px) { .achievements-list { grid-template-columns: 1fr; } }
+
+    .achievement { display: flex; align-items: center; background: #22222b; padding: 12px; border-radius: 8px; text-align: left; border: 1px dashed #444; }
+    .achievement.unlocked { background: #3a3a4a; border: 1px solid #00e676; border-left: 5px solid #00e676; }
+    .ach-icon { display: flex; align-items: center; justify-content: center; margin-right: 15px; min-width: 40px; height: 40px; }
+    .ach-icon svg { width: 32px; height: 32px; }
+    .ach-info h3 { margin: 0 0 4px 0; font-size: 1rem; color: #ffb74d; }
+    .achievement.unlocked .ach-info h3 { color: #fff; }
+    .ach-info p { margin: 0; font-size: 0.85rem; color: #78909c; }
+    .achievement.unlocked .ach-info p { color: #b0bec5; user-select: none; }
+
+    /* ================= АНИМАЦИЯ ПОЛУЧЕНИЯ АЧИВКИ С СЕМЕРКОЙ И ЗАТЕМНЕНИЕМ ================= */
+    #toast-container {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        z-index: 99999; pointer-events: none; display: none; align-items: center; justify-content: center;
+        /* Изменение: Теперь здесь полноценное глубокое затемнение игрового фона */
+        background: rgba(10, 10, 14, 0.85); 
+        backdrop-filter: blur(3px); /* Легкое размытие заднего плана */
+    }
+
+    .seven-wrapper {
+        position: relative; display: flex; align-items: center; justify-content: center;
+        width: 600px; height: 350px;
+        animation: introFade 0.3s forwards, outroFade 0.3s 4.2s forwards;
+    }
+
+    .seven-half { position: absolute; width: 120px; height: 300px; overflow: hidden; pointer-events: none; }
+    .seven-shape {
+        position: absolute; width: 240px; height: 300px; background: #00e676;
+        box-shadow: 0 0 50px rgba(0, 230, 118, 0.9);
+        clip-path: polygon(0% 0%, 100% 0%, 100% 18%, 42% 100%, 12% 100%, 65% 18%, 0% 18%);
+    }
+
+    .seven-left {
+        left: calc(50% - 120px);
+        animation: splitLeft 0.5s 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards, mergeLeft 0.5s 3.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+    .seven-left .seven-shape { left: 0; }
+
+    .seven-right {
+        left: 50%;
+        animation: splitRight 0.5s 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards, mergeRight 0.5s 3.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    }
+    .seven-right .seven-shape { left: -120px; }
+
+    .toast-card {
+        position: absolute; background: #23232e; border: 2px solid #00e676;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 25px rgba(0, 230, 118, 0.4);
+        padding: 15px; border-radius: 12px; display: flex; align-items: center;
+        width: 280px; height: 100px; box-sizing: border-box;
+        opacity: 0; transform: scale(0.6);
+        animation: showCard 0.4s 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, hideCard 0.3s 3.3s ease forwards;
+        z-index: 10;
+    }
+    .toast-card .ach-icon svg { width: 42px; height: 42px; }
+    .toast-card h4 { margin: 0 0 3px 0; color: #00e676; font-size: 1rem; }
+    .toast-card h3 { margin: 0 0 2px 0; font-size: 0.95rem; color:#fff; }
+    .toast-card p { margin: 0; font-size: 0.8rem; color: #b0bec5; line-height: 1.2; }
+
+    /* Keyframes */
+    @keyframes introFade { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes outroFade { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes splitLeft { from { transform: translateX(0); } to { transform: translateX(-170px); } }
+    @keyframes mergeLeft { from { transform: translateX(-170px); } to { transform: translateX(0); } }
+    @keyframes splitRight { from { transform: translateX(0); } to { transform: translateX(170px); } }
+    @keyframes mergeRight { from { transform: translateX(170px); } to { transform: translateX(0); } }
+    @keyframes showCard { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: scale(1); } }
+    @keyframes hideCard { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.7); } }
+</style>
+<script>
+    const svgIcons = {
+        lock: `<svg viewBox="0 0 24 24" fill="none" stroke="#78909c" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
+        start: `<svg viewBox="0 0 24 24" fill="none" stroke="#00e676" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>`,
+        halfMinute: `<svg viewBox="0 0 24 24" fill="none" stroke="#29b6f6" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+        minute: `<svg viewBox="0 0 24 24" fill="none" stroke="#ab47bc" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 12 18"></polyline></svg>`,
+        persistent: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffa726" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>`,
+        zen: `<svg viewBox="0 0 24 24" fill="none" stroke="#26a69a" stroke-width="2"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>`,
+        king: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="2"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"></path><path d="M3 20h18"></path></svg>`
+    };
+
+    const achievementsData = [
+        { id: 1, seconds: 5, icon: svgIcons.start, title: 'Первый вздох', desc: 'Пробыть в игре первые 5 секунд.' },
+        { id: 2, seconds: 30, icon: svgIcons.halfMinute, title: 'Стабильность', desc: 'Вы созерцали экран полминуты.' },
+        { id: 3, seconds: 60, icon: svgIcons.minute, title: 'Минутка пошла', desc: 'Целая минута вашей жизни ушла сюда.' },
+        { id: 4, seconds: 180, icon: svgIcons.persistent, title: 'Упорный', desc: '3 минуты онлайна. Вы никуда не спешите.' },
+        { id: 5, seconds: 300, icon: svgIcons.zen, title: 'Мастер Дзен', desc: '5 минут абсолютного ничегонеделания.' },
+        { id: 6, seconds: 600, icon: svgIcons.king, title: 'Повелитель Времени', desc: '10 минут! Вы легенда этой вкладки.' }
+    ];
+    let totalSeconds = parseInt(localStorage.getItem('timeGame_seconds')) || 0;
+    let unlockedAchievements = JSON.parse(localStorage.getItem('timeGame_achievements')) || [];
+
+    const timerElement = document.getElementById('timer');
+    const container = document.getElementById('achievements-container');
+    const startOverlay = document.getElementById('start-overlay');
+    const toastContainer = document.getElementById('toast-container');
+    const toastCardContent = document.getElementById('toast-card-content');
+
+    let gameActive = false;
+    let toastQueue = [];
+    let isToastPlaying = false;
+    let audioCtx = null;
+
+    // === КОДОВОЕ ВОСПРОИЗВЕДЕНИЕ МУЗЫКИ И ЗВУКОВ ===
+    function initAudio() {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        playBackgroundMusic();
+    }
+
+    function playBackgroundMusic() {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(110, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime); // Тихо на фоне
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        
+        setInterval(() => {
+            let nextFreq = [110, 130.81, 146.83, 164.81][Math.floor(Math.random() * 4)];
+            osc.frequency.setTargetAtTime(nextFreq, audioCtx.currentTime, 2);
+        }, 8000);
+    }
+
+    function playAchievementSound() {
+        if (!audioCtx) return;
+        let now = audioCtx.currentTime;
+        let freqs = [523.25, 659.25, 783.99, 1046.50]; // Праздничный мажор
+        
+        freqs.forEach((f, index) => {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, now + index * 0.08);
+            
+            gain.gain.setValueAtTime(0.15, now + index * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.6);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + index * 0.08);
+            osc.stop(now + index * 0.08 + 0.6);
+        });
+    }
+
+    // === ЛОГИКА ИГРЫ ===
+    function formatTime(seconds) {
+        const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        return `${hrs}:${mins}:${secs}`;
+    }
+
+    // Отрисовка внутри Галереи
+    function renderAchievements() {
+        container.innerHTML = '';
+        achievementsData.forEach(ach => {
+            const isUnlocked = unlockedAchievements.includes(ach.id);
+            const icon = isUnlocked ? ach.icon : svgIcons.lock;
+            const title = isUnlocked ? ach.title : 'Секретное достижение';
+            const desc = isUnlocked ? ach.desc : 'Условия получения неизвестны...';
+
+            container.innerHTML += `
+                <div class="achievement ${isUnlocked ? 'unlocked' : ''}">
+                    <div class="ach-icon">${icon}</div>
+                    <div class="ach-info">
+                        <h3>${title}</h3>
+                        <p>${desc}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function triggerToast(ach) {
+        toastQueue.push(ach);
+        processToastQueue();
+    }
+
+    function processToastQueue() {
+        if (isToastPlaying || toastQueue.length === 0) return;
+        isToastPlaying = true;
+
+        const ach = toastQueue.shift();
+        toastCardContent.innerHTML = `
+            <div class="ach-icon">${ach.icon}</div>
+            <div class="ach-info">
+                <h4>Открыто!</h4>
+                <h3>${ach.title}</h3>
+                <p>${ach.desc}</p>
+            </div>
+        `;
+
+        toastContainer.style.display = 'flex';
+        playAchievementSound();
+
+        setTimeout(() => {
+            toastContainer.style.display = 'none';
+            isToastPlaying = false;
+            processToastQueue();
+        }, 4500);
+    }
+
+    function gameLoop() {
+        if (!gameActive) return;
+        totalSeconds++;
+        timerElement.textContent = formatTime(totalSeconds);
+
+        achievementsData.forEach(ach => {
+            if (totalSeconds >= ach.seconds && !unlockedAchievements.includes(ach.id)) {
+                unlockedAchievements.push(ach.id);
+                renderAchievements(); // Перерисовываем скрытую галерею в фоне
+                triggerToast(ach);
+            }
+        });
+
+        localStorage.setItem('timeGame_seconds', totalSeconds);
+        localStorage.setItem('timeGame_achievements', JSON.stringify(unlockedAchievements));
+    }
+
+    // Включение игры и переход в полный экран
+    function startGame() {
+        gameActive = true;
+        startOverlay.style.display = 'none';
+        initAudio();
+
+        const docElm = document.documentElement;
+        if (docElm.requestFullscreen) docElm.requestFullscreen();
+        else if (docElm.mozRequestFullScreen) docElm.mozRequestFullScreen();
+        else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
+        else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
+
+        if (screen.orientation && screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(e => console.log("Ориентация не поддерживается"));
+        }
+    }
+
+    // Управление модальными окнами (Галерея / Сброс)
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function confirmReset(isConfirmed) {
+        closeModal('confirm-modal');
+        if (isConfirmed) {
+            localStorage.clear();
+            totalSeconds = 0;
+            unlockedAchievements = [];
+            timerElement.textContent = formatTime(0);
+            renderAchievements();
+        }
+    }
+
+    // Инициализация
+    timerElement.textContent = formatTime(totalSeconds);
+    renderAchievements();
+    setInterval(gameLoop, 1000);
+</script>
+</body>
+</html>
