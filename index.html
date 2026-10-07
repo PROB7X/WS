@@ -212,7 +212,13 @@
         minute: `<svg viewBox="0 0 24 24" fill="none" stroke="#ab47bc" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 12 18"></polyline></svg>`,
         persistent: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffa726" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>`,
         zen: `<svg viewBox="0 0 24 24" fill="none" stroke="#26a69a" stroke-width="2"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>`,
-        king: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="2"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"></path><path d="M3 20h18"></path></svg>`
+        king: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="2"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"></path><path d="M3 20h18"></path></svg>`,
+        observer: `<svg viewBox="0 0 24 24" fill="none" stroke="#80deea" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"></path></svg>`,
+        hourglass: `<svg viewBox="0 0 24 24" fill="none" stroke="#ff8a65" stroke-width="2"><path d="M6 2h12M6 22h12M6 2v4l6 6 6-6V2M6 22v-4l6-6 6 6v4"></path></svg>`,
+        guardian: `<svg viewBox="0 0 24 24" fill="none" stroke="#e57373" stroke-width="2"><path d="M12 2L4 5v7c0 5 3.5 9 8 10 4.5-1 8-5 8-10V5l-8-3z"></path></svg>`,
+        coffee: `<svg viewBox="0 0 24 24" fill="none" stroke="#bcaaa4" stroke-width="2"><path d="M18 8h1a3 3 0 0 1 0 6h-1M6 8h12v5a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V8z"></path><path d="M8 3v2M12 3v2M16 3v2"></path></svg>`,
+        sunset: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffd54f" stroke-width="2"><circle cx="12" cy="14" r="4"></circle><path d="M12 4v2M4.93 6.93l1.41 1.41M2 14h2M20 14h2M17.66 8.34l1.41-1.41M2 22h20M8 22l2-3M16 22l-2-3"></path></svg>`,
+        moon: `<svg viewBox="0 0 24 24" fill="none" stroke="#9575cd" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
     };
 
     const achievementsData = [
@@ -221,8 +227,15 @@
         { id: 3, seconds: 60, icon: svgIcons.minute, title: 'Минутка пошла', desc: 'Целая минута вашей жизни ушла сюда.' },
         { id: 4, seconds: 180, icon: svgIcons.persistent, title: 'Упорный', desc: '3 минуты онлайна. Вы никуда не спешите.' },
         { id: 5, seconds: 300, icon: svgIcons.zen, title: 'Мастер Дзен', desc: '5 минут абсолютного ничегонеделания.' },
-        { id: 6, seconds: 600, icon: svgIcons.king, title: 'Повелитель Времени', desc: '10 минут! Вы легенда этой вкладки.' }
+        { id: 6, seconds: 600, icon: svgIcons.king, title: 'Повелитель Времени', desc: '10 минут! Вы легенда этой вкладки.' },
+        { id: 7, seconds: 900, icon: svgIcons.observer, title: 'Спокойный наблюдатель', desc: '15 минут — вы уже почти медитируете.' },
+        { id: 8, seconds: 1800, icon: svgIcons.hourglass, title: 'Песочные часы', desc: 'Полчаса в игре — время течёт, а вы здесь.' },
+        { id: 9, seconds: 3600, icon: svgIcons.guardian, title: 'Часовой страж', desc: 'Ровно час. Вы не просто ждали — вы охраняли вкладку.' },
+        { id: 10, seconds: 7200, icon: svgIcons.coffee, title: 'Кофе-брейк', desc: '2 часа. Это уже почти половина рабочего дня.' },
+        { id: 11, seconds: 21600, icon: svgIcons.sunset, title: 'Закат в онлайне', desc: '6 часов — вы пережили целый рабочий день в игре.' },
+        { id: 12, seconds: 43200, icon: svgIcons.moon, title: 'Половина суток', desc: '12 часов. Вы настоящий повелитель времени.' }
     ];
+
     let totalSeconds = parseInt(localStorage.getItem('timeGame_seconds')) || 0;
     let unlockedAchievements = JSON.parse(localStorage.getItem('timeGame_achievements')) || [];
 
