@@ -28,23 +28,60 @@
     </div>
 </div>
 
+<!-- Модальное окно: Мини-игра Мины -->
+<div id="mines-modal" class="game-modal">
+    <div class="modal-content mines-content">
+        <h2 style="margin-top:0; color:#ffca28; border-bottom:2px solid #ffca28; padding-bottom:10px;">💣 Мины</h2>
+        <p style="color:#aaa; font-size:0.9rem; margin-bottom:15px;">Поставьте время и открывайте ячейки. Каждая безопасная ячейка увеличивает множитель. Попадёте на мину — потеряете ставку.</p>
+
+        <div id="mines-setup">
+            <label style="display:block; text-align:left; margin-bottom:5px; font-size:0.85rem; color:#aaa;">Ставка (секунды):</label>
+            <input type="number" id="mines-bet" value="30" min="1" max="999999" style="width:100%; padding:8px; border-radius:6px; border:1px solid #555; background:#1e1e24; color:#fff; font-size:1rem; margin-bottom:10px; box-sizing:border-box;">
+
+            <label style="display:block; text-align:left; margin-bottom:5px; font-size:0.85rem; color:#aaa;">Количество мин:</label>
+            <div id="mines-count-selector" style="display:flex; gap:8px; margin-bottom:15px;">
+                <button class="mine-count-btn active" onclick="selectMinesCount(3)">3 мины</button>
+                <button class="mine-count-btn" onclick="selectMinesCount(5)">5 мин</button>
+                <button class="mine-count-btn" onclick="selectMinesCount(10)">10 мин</button>
+            </div>
+
+            <button class="btn-modal" style="background:#00e676; color:#1e1e24; width:100%; padding:12px; font-size:1.1rem;" onclick="startMinesGame()">Начать игру</button>
+        </div>
+
+        <div id="mines-game" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                <div style="font-size:0.9rem; color:#aaa;">Ставка: <span id="mines-current-bet" style="color:#ffca28; font-weight:bold;"></span></div>
+                <div style="font-size:0.9rem; color:#aaa;">Множитель: <span id="mines-multiplier" style="color:#00e676; font-weight:bold;">1.00x</span></div>
+                <div style="font-size:0.9rem; color:#aaa;">Выигрыш: <span id="mines-potential" style="color:#4fc3f7; font-weight:bold;"></span></div>
+            </div>
+            <div id="mines-grid"></div>
+            <button class="btn-modal" style="background:#ff9800; color:#1e1e24; width:100%; padding:12px; font-size:1.1rem; margin-top:15px;" onclick="cashoutMines()">Забрать выигрыш</button>
+        </div>
+
+        <div id="mines-result" style="display:none; text-align:center; padding:20px 0;">
+            <h3 id="mines-result-title" style="margin:0 0 10px 0;"></h3>
+            <p id="mines-result-text" style="color:#aaa; margin-bottom:15px;"></p>
+            <button class="btn-modal" style="background:#00e676; color:#1e1e24; width:100%; padding:12px; font-size:1.1rem;" onclick="resetMinesGame()">Играть снова</button>
+        </div>
+
+        <button class="btn-modal btn-no" style="margin-top:15px; background:#444; width:100%;" onclick="closeMinesModal()">Закрыть</button>
+    </div>
+</div>
+
 <!-- Оверлей уведомления об ачивке (Семерка и карточка С ЗАТЕМНЕНИЕМ ФОНА) -->
 <div id="toast-container">
     <div class="seven-wrapper">
-        <!-- Левая половинка семерки -->
         <div class="seven-half seven-left">
             <div class="seven-shape"></div>
         </div>
-        <!-- Правая половинка семерки -->
         <div class="seven-half seven-right">
             <div class="seven-shape"></div>
         </div>
-        <!-- Карточка достижения, которая появится между ними -->
         <div class="toast-card" id="toast-card-content"></div>
     </div>
 </div>
 
-<!-- Стартовый экран для активации звука и перехода в полный экран -->
+<!-- Стартовый экран -->
 <div id="start-overlay">
     <h2 style="margin-bottom: 20px;">Добро пожаловать в Симулятор Времени</h2>
     <p style="color: #aaa; margin-bottom: 25px;">Игра развернется на весь экран со звуком и музыкой</p>
@@ -58,14 +95,19 @@
         <div class="timer" id="timer">00:00:00</div>
     </div>
 
-    <!-- Кнопка вызова Галереи вместо огромного списка -->
     <button class="btn-gallery" onclick="openModal('gallery-modal')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         Галерея ачивок
     </button>
 
+    <button class="btn-mines-open" onclick="openModal('mines-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.5 4.5l2 2M17.5 17.5l2 2M4.5 19.5l2-2M17.5 6.5l2-2"/></svg>
+        Мини-игра: Мины
+    </button>
+
     <button class="btn-reset" onclick="openModal('confirm-modal')">Сбросить прогресс</button>
 </div>
+
 <style>
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -74,7 +116,6 @@
         min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; overflow: hidden; position: relative;
     }
 
-    /* Стартовый экран */
     #start-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #111116;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -88,7 +129,6 @@
     }
     .btn-start:hover { background: #00c853; transform: scale(1.05); }
 
-    /* Главный контейнер игры */
     .container {
         text-align: center; background: #2a2a35; padding: 30px; border-radius: 15px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 500px; width: 100%;
@@ -100,7 +140,6 @@
         text-shadow: 0 0 15px rgba(0, 230, 118, 0.3); margin: 10px 0;
     }
 
-    /* Стильная кнопка галереи ачивок */
     .btn-gallery {
         background: #4fc3f7; color: #1e1e24; border: none; padding: 12px 30px;
         font-size: 1.1rem; font-weight: bold; border-radius: 25px; cursor: pointer;
@@ -110,13 +149,21 @@
     .btn-gallery:hover { background: #29b6f6; transform: translateY(-2px); }
     .btn-gallery svg { width: 20px; height: 20px; }
 
+    .btn-mines-open {
+        background: #ffca28; color: #1e1e24; border: none; padding: 12px 30px;
+        font-size: 1.1rem; font-weight: bold; border-radius: 25px; cursor: pointer;
+        display: flex; align-items: center; gap: 10px; transition: background 0.2s, transform 0.2s;
+        box-shadow: 0 4px 15px rgba(255, 202, 40, 0.3);
+    }
+    .btn-mines-open:hover { background: #ffb300; transform: translateY(-2px); }
+    .btn-mines-open svg { width: 20px; height: 20px; }
+
     .btn-reset {
         background: #ff5252; color: white; border: none; padding: 6px 12px;
         border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; opacity: 0.7;
     }
     .btn-reset:hover { background: #ff1744; opacity: 1; }
 
-    /* Общие стили для модальных окон */
     .game-modal {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10000;
@@ -126,12 +173,12 @@
         border: 2px solid #ff5252; max-width: 400px; width: 90%; box-shadow: 0 0 30px rgba(255, 82, 82, 0.2);
     }
     .gallery-content { max-width: 750px; width: 90%; border-color: #4fc3f7; max-height: 80vh; display: flex; flex-direction: column; }
+    .mines-content { max-width: 480px; width: 90%; border-color: #ffca28; max-height: 85vh; overflow-y: auto; }
     .modal-btns { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
     .btn-modal { border: none; padding: 10px 25px; font-weight: bold; border-radius: 5px; cursor: pointer; }
     .btn-yes { background: #ff5252; color: #fff; }
     .btn-no { background: #555; color: #fff; }
 
-    /* Сетка ачивок внутри галереи */
     .achievements-list {
         margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow-y: auto; padding-right: 5px; flex-grow: 1;
     }
@@ -146,13 +193,34 @@
     .ach-info p { margin: 0; font-size: 0.85rem; color: #78909c; }
     .achievement.unlocked .ach-info p { color: #b0bec5; user-select: none; }
 
-    /* ================= АНИМАЦИЯ ПОЛУЧЕНИЯ АЧИВКИ С СЕМЕРКОЙ И ЗАТЕМНЕНИЕМ ================= */
+    /* Мины: стили */
+    .mine-count-btn {
+        flex: 1; padding: 8px; border: 1px solid #555; border-radius: 6px; background: #22222b; color: #aaa;
+        cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: all 0.2s;
+    }
+    .mine-count-btn.active { background: #ffca28; color: #1e1e24; border-color: #ffca28; }
+
+    #mines-grid {
+        display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 5px;
+    }
+    .mine-cell {
+        aspect-ratio: 1; border-radius: 8px; background: #3a3a4a; border: 1px solid #555;
+        display: flex; align-items: center; justify-content: center; cursor: pointer;
+        font-size: 1.2rem; transition: all 0.15s; user-select: none;
+    }
+    .mine-cell:hover { background: #4a4a5a; transform: scale(1.05); }
+    .mine-cell.opened-safe { background: #1b5e20; border-color: #00e676; cursor: default; }
+    .mine-cell.opened-safe:hover { transform: none; }
+    .mine-cell.opened-mine { background: #b71c1c; border-color: #ff5252; cursor: default; }
+    .mine-cell.opened-mine:hover { transform: none; }
+    .mine-cell.revealed { background: #2a2a35; border-color: #444; cursor: default; }
+    .mine-cell.revealed:hover { transform: none; }
+
+    /* Анимация ачивки */
     #toast-container {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         z-index: 99999; pointer-events: none; display: none; align-items: center; justify-content: center;
-        /* Изменение: Теперь здесь полноценное глубокое затемнение игрового фона */
-        background: rgba(10, 10, 14, 0.85); 
-        backdrop-filter: blur(3px); /* Легкое размытие заднего плана */
+        background: rgba(10, 10, 14, 0.85); backdrop-filter: blur(3px);
     }
 
     .seven-wrapper {
@@ -194,7 +262,6 @@
     .toast-card h3 { margin: 0 0 2px 0; font-size: 0.95rem; color:#fff; }
     .toast-card p { margin: 0; font-size: 0.8rem; color: #b0bec5; line-height: 1.2; }
 
-    /* Keyframes */
     @keyframes introFade { from { opacity: 0; } to { opacity: 1; } }
     @keyframes outroFade { from { opacity: 1; } to { opacity: 0; } }
     @keyframes splitLeft { from { transform: translateX(0); } to { transform: translateX(-170px); } }
@@ -213,12 +280,12 @@
         persistent: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffa726" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6v6l4 2"></path></svg>`,
         zen: `<svg viewBox="0 0 24 24" fill="none" stroke="#26a69a" stroke-width="2"><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>`,
         king: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="2"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z"></path><path d="M3 20h18"></path></svg>`,
-        observer: `<svg viewBox="0 0 24 24" fill="none" stroke="#80deea" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"></path></svg>`,
-        hourglass: `<svg viewBox="0 0 24 24" fill="none" stroke="#ff8a65" stroke-width="2"><path d="M6 2h12M6 22h12M6 2v4l6 6 6-6V2M6 22v-4l6-6 6 6v4"></path></svg>`,
-        guardian: `<svg viewBox="0 0 24 24" fill="none" stroke="#e57373" stroke-width="2"><path d="M12 2L4 5v7c0 5 3.5 9 8 10 4.5-1 8-5 8-10V5l-8-3z"></path></svg>`,
-        coffee: `<svg viewBox="0 0 24 24" fill="none" stroke="#bcaaa4" stroke-width="2"><path d="M18 8h1a3 3 0 0 1 0 6h-1M6 8h12v5a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V8z"></path><path d="M8 3v2M12 3v2M16 3v2"></path></svg>`,
-        sunset: `<svg viewBox="0 0 24 24" fill="none" stroke="#ffd54f" stroke-width="2"><circle cx="12" cy="14" r="4"></circle><path d="M12 4v2M4.93 6.93l1.41 1.41M2 14h2M20 14h2M17.66 8.34l1.41-1.41M2 22h20M8 22l2-3M16 22l-2-3"></path></svg>`,
-        moon: `<svg viewBox="0 0 24 24" fill="none" stroke="#9575cd" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
+        eye: `<svg viewBox="0 0 24 24" fill="none" stroke="#5c6bc0" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+        hourglass: `<svg viewBox="0 0 24 24" fill="none" stroke="#ff8a65" stroke-width="2"><path d="M6 2h12M6 22h12M6 2v6l6 4 6-4V2M6 22v-6l6-4 6 4v6"></path></svg>`,
+        shield: `<svg viewBox="0 0 24 24" fill="none" stroke="#42a5f5" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 11 14 15 10"></polyline></svg>`,
+        coffee: `<svg viewBox="0 0 24 24" fill="none" stroke="#a1887f" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>`,
+        sunset: `<svg viewBox="0 0 24 24" fill="none" stroke="#ff7043" stroke-width="2"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="2" x2="12" y2="9"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="1" y1="18" x2="3" y2="18"></line><line x1="21" y1="18" x2="23" y2="18"></line><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"></line><line x1="23" y1="22" x2="1" y2="22"></line><polyline points="8 6 12 2 16 6"></polyline></svg>`,
+        moon: `<svg viewBox="0 0 24 24" fill="none" stroke="#7986cb" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`
     };
 
     const achievementsData = [
@@ -228,12 +295,12 @@
         { id: 4, seconds: 180, icon: svgIcons.persistent, title: 'Упорный', desc: '3 минуты онлайна. Вы никуда не спешите.' },
         { id: 5, seconds: 300, icon: svgIcons.zen, title: 'Мастер Дзен', desc: '5 минут абсолютного ничегонеделания.' },
         { id: 6, seconds: 600, icon: svgIcons.king, title: 'Повелитель Времени', desc: '10 минут! Вы легенда этой вкладки.' },
-        { id: 7, seconds: 900, icon: svgIcons.observer, title: 'Спокойный наблюдатель', desc: '15 минут — вы уже почти медитируете.' },
+        { id: 7, seconds: 900, icon: svgIcons.eye, title: 'Спокойный наблюдатель', desc: '15 минут — вы уже почти медитируете.' },
         { id: 8, seconds: 1800, icon: svgIcons.hourglass, title: 'Песочные часы', desc: 'Полчаса в игре — время течёт, а вы здесь.' },
-        { id: 9, seconds: 3600, icon: svgIcons.guardian, title: 'Часовой страж', desc: 'Ровно час. Вы не просто ждали — вы охраняли вкладку.' },
-        { id: 10, seconds: 7200, icon: svgIcons.coffee, title: 'Кофе-брейк', desc: '2 часа. Это уже почти половина рабочего дня.' },
-        { id: 11, seconds: 21600, icon: svgIcons.sunset, title: 'Закат в онлайне', desc: '6 часов — вы пережили целый рабочий день в игре.' },
-        { id: 12, seconds: 43200, icon: svgIcons.moon, title: 'Половина суток', desc: '12 часов. Вы настоящий повелитель времени.' }
+        { id: 9, seconds: 3600, icon: svgIcons.shield, title: 'Часовой страж', desc: 'Ровно час. Вы охраняли вкладку.' },
+        { id: 10, seconds: 7200, icon: svgIcons.coffee, title: 'Кофе-брейк', desc: '2 часа. Это уже половина рабочего дня.' },
+        { id: 11, seconds: 21600, icon: svgIcons.sunset, title: 'Закат в онлайне', desc: '6 часов — вы пережили целый рабочий день.' },
+        { id: 12, seconds: 43200, icon: svgIcons.moon, title: 'Половина суток', desc: '12 часов. Половина суток — вы настоящий повелитель времени.' }
     ];
 
     let totalSeconds = parseInt(localStorage.getItem('timeGame_seconds')) || 0;
@@ -250,7 +317,6 @@
     let isToastPlaying = false;
     let audioCtx = null;
 
-    // === КОДОВОЕ ВОСПРОИЗВЕДЕНИЕ МУЗЫКИ И ЗВУКОВ ===
     function initAudio() {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         playBackgroundMusic();
@@ -261,11 +327,10 @@
         let gain = audioCtx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(110, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.06, audioCtx.currentTime); // Тихо на фоне
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
-        
         setInterval(() => {
             let nextFreq = [110, 130.81, 146.83, 164.81][Math.floor(Math.random() * 4)];
             osc.frequency.setTargetAtTime(nextFreq, audioCtx.currentTime, 2);
@@ -275,17 +340,14 @@
     function playAchievementSound() {
         if (!audioCtx) return;
         let now = audioCtx.currentTime;
-        let freqs = [523.25, 659.25, 783.99, 1046.50]; // Праздничный мажор
-        
+        let freqs = [523.25, 659.25, 783.99, 1046.50];
         freqs.forEach((f, index) => {
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(f, now + index * 0.08);
-            
             gain.gain.setValueAtTime(0.15, now + index * 0.08);
             gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.08 + 0.6);
-            
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start(now + index * 0.08);
@@ -293,15 +355,64 @@
         });
     }
 
-    // === ЛОГИКА ИГРЫ ===
+    function playMineClickSound() {
+        if (!audioCtx) return;
+        let now = audioCtx.currentTime;
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    }
+
+    function playMineExplosionSound() {
+        if (!audioCtx) return;
+        let now = audioCtx.currentTime;
+        let noise = audioCtx.createBufferSource();
+        let buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.5, audioCtx.sampleRate);
+        let data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / data.length, 2);
+        noise.buffer = buffer;
+        let gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        noise.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start(now);
+        noise.stop(now + 0.5);
+    }
+
+    function playCashoutSound() {
+        if (!audioCtx) return;
+        let now = audioCtx.currentTime;
+        let freqs = [523.25, 659.25, 783.99];
+        freqs.forEach((f, index) => {
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(f, now + index * 0.1);
+            gain.gain.setValueAtTime(0.12, now + index * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + index * 0.1);
+            osc.stop(now + index * 0.1 + 0.4);
+        });
+    }
+
     function formatTime(seconds) {
+        if (seconds < 0) seconds = 0;
         const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
         const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
         const secs = (seconds % 60).toString().padStart(2, '0');
         return `${hrs}:${mins}:${secs}`;
     }
 
-    // Отрисовка внутри Галереи
     function renderAchievements() {
         container.innerHTML = '';
         achievementsData.forEach(ach => {
@@ -309,7 +420,6 @@
             const icon = isUnlocked ? ach.icon : svgIcons.lock;
             const title = isUnlocked ? ach.title : 'Секретное достижение';
             const desc = isUnlocked ? ach.desc : 'Условия получения неизвестны...';
-
             container.innerHTML += `
                 <div class="achievement ${isUnlocked ? 'unlocked' : ''}">
                     <div class="ach-icon">${icon}</div>
@@ -330,7 +440,6 @@
     function processToastQueue() {
         if (isToastPlaying || toastQueue.length === 0) return;
         isToastPlaying = true;
-
         const ach = toastQueue.shift();
         toastCardContent.innerHTML = `
             <div class="ach-icon">${ach.icon}</div>
@@ -340,10 +449,8 @@
                 <p>${ach.desc}</p>
             </div>
         `;
-
         toastContainer.style.display = 'flex';
         playAchievementSound();
-
         setTimeout(() => {
             toastContainer.style.display = 'none';
             isToastPlaying = false;
@@ -351,42 +458,50 @@
         }, 4500);
     }
 
-    function gameLoop() {
-        if (!gameActive) return;
-        totalSeconds++;
-        timerElement.textContent = formatTime(totalSeconds);
-
+    function checkAchievements() {
         achievementsData.forEach(ach => {
             if (totalSeconds >= ach.seconds && !unlockedAchievements.includes(ach.id)) {
                 unlockedAchievements.push(ach.id);
-                renderAchievements(); // Перерисовываем скрытую галерею в фоне
+                renderAchievements();
                 triggerToast(ach);
             }
         });
-
         localStorage.setItem('timeGame_seconds', totalSeconds);
         localStorage.setItem('timeGame_achievements', JSON.stringify(unlockedAchievements));
     }
 
-    // Включение игры и переход в полный экран
+    function gameLoop() {
+        if (!gameActive) return;
+        totalSeconds++;
+        timerElement.textContent = formatTime(totalSeconds);
+        checkAchievements();
+    }
+
+    function addTime(amount) {
+        totalSeconds += amount;
+        if (totalSeconds < 0) totalSeconds = 0;
+        timerElement.textContent = formatTime(totalSeconds);
+        checkAchievements();
+    }
+
     function startGame() {
         gameActive = true;
         startOverlay.style.display = 'none';
         initAudio();
-
         const docElm = document.documentElement;
         if (docElm.requestFullscreen) docElm.requestFullscreen();
         else if (docElm.mozRequestFullScreen) docElm.mozRequestFullScreen();
         else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
         else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
-
         if (screen.orientation && screen.orientation.lock) {
             screen.orientation.lock('landscape').catch(e => console.log("Ориентация не поддерживается"));
         }
     }
 
-    // Управление модальными окнами (Галерея / Сброс)
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function openModal(id) {
+        document.getElementById(id).style.display = 'flex';
+        if (id === 'gallery-modal') renderAchievements();
+    }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
     function confirmReset(isConfirmed) {
@@ -397,7 +512,169 @@
             unlockedAchievements = [];
             timerElement.textContent = formatTime(0);
             renderAchievements();
+            resetMinesGame();
         }
+    }
+
+    // ===================== МИНИ-ИГРА: МИНЫ =====================
+    let minesState = {
+        bet: 0,
+        minesCount: 3,
+        gridSize: 25,
+        minePositions: [],
+        openedCells: [],
+        gameActive: false,
+        multiplier: 1.0
+    };
+
+    function selectMinesCount(count) {
+        minesState.minesCount = count;
+        document.querySelectorAll('.mine-count-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function calculateMultiplier(opened, totalCells, mines) {
+        if (opened === 0) return 1.0;
+        let safeCells = totalCells - mines;
+        let mult = 1.0;
+        for (let i = 0; i < opened; i++) {
+            mult *= (totalCells - i) / (safeCells - i);
+        }
+        // Дом края ~3%
+        mult *= 0.97;
+        return Math.max(1.0, mult);
+    }
+
+    function startMinesGame() {
+        let bet = parseInt(document.getElementById('mines-bet').value);
+        if (!bet || bet < 1) { alert('Введите ставку больше 0'); return; }
+        if (bet > totalSeconds) { alert('Недостаточно времени! У вас: ' + totalSeconds + ' сек.'); return; }
+
+        minesState.bet = bet;
+        minesState.openedCells = [];
+        minesState.gameActive = true;
+        minesState.multiplier = 1.0;
+        addTime(-bet);
+
+        // Расставляем мины
+        let positions = [];
+        for (let i = 0; i < minesState.gridSize; i++) positions.push(i);
+        // Shuffle
+        for (let i = positions.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [positions[i], positions[j]] = [positions[j], positions[i]];
+        }
+        minesState.minePositions = positions.slice(0, minesState.minesCount).sort((a, b) => a - b);
+
+        document.getElementById('mines-setup').style.display = 'none';
+        document.getElementById('mines-result').style.display = 'none';
+        document.getElementById('mines-game').style.display = 'block';
+        document.getElementById('mines-current-bet').textContent = bet + ' сек.';
+
+        renderMinesGrid();
+        updateMinesInfo();
+    }
+
+    function renderMinesGrid() {
+        const grid = document.getElementById('mines-grid');
+        grid.innerHTML = '';
+        for (let i = 0; i < minesState.gridSize; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'mine-cell';
+            cell.dataset.index = i;
+            cell.onclick = () => openMineCell(i);
+            grid.appendChild(cell);
+        }
+    }
+
+    function openMineCell(index) {
+        if (!minesState.gameActive || minesState.openedCells.includes(index)) return;
+
+        const cell = document.querySelector(`.mine-cell[data-index="${index}"]`);
+        if (!cell) return;
+
+        if (minesState.minePositions.includes(index)) {
+            // Бум!
+            cell.classList.add('opened-mine');
+            cell.innerHTML = '💣';
+            playMineExplosionSound();
+            minesState.gameActive = false;
+
+            // Раскрываем все мины
+            minesState.minePositions.forEach(pos => {
+                if (pos !== index) {
+                    let c = document.querySelector(`.mine-cell[data-index="${pos}"]`);
+                    if (c && !c.classList.contains('opened-safe')) {
+                        c.classList.add('revealed');
+                        c.innerHTML = '💣';
+                    }
+                }
+            });
+
+            showMinesResult(false);
+        } else {
+            cell.classList.add('opened-safe');
+            cell.innerHTML = '💎';
+            minesState.openedCells.push(index);
+            playMineClickSound();
+
+            minesState.multiplier = calculateMultiplier(minesState.openedCells.length, minesState.gridSize, minesState.minesCount);
+            updateMinesInfo();
+
+            // Все ячейки открыты
+            if (minesState.openedCells.length === minesState.gridSize - minesState.minesCount) {
+                cashoutMines();
+            }
+        }
+    }
+
+    function updateMinesInfo() {
+        document.getElementById('mines-multiplier').textContent = minesState.multiplier.toFixed(2) + 'x';
+        let potential = Math.floor(minesState.bet * minesState.multiplier);
+        document.getElementById('mines-potential').textContent = potential + ' сек.';
+    }
+
+    function cashoutMines() {
+        if (!minesState.gameActive) return;
+        minesState.gameActive = false;
+        let winnings = Math.floor(minesState.bet * minesState.multiplier);
+        if (winnings > 0) {
+            addTime(winnings);
+            playCashoutSound();
+        }
+        showMinesResult(true, winnings);
+    }
+
+    function showMinesResult(win, winnings) {
+        document.getElementById('mines-game').style.display = 'none';
+        document.getElementById('mines-result').style.display = 'block';
+
+        if (win) {
+            document.getElementById('mines-result-title').textContent = '🎉 Выигрыш!';
+            document.getElementById('mines-result-title').style.color = '#00e676';
+            document.getElementById('mines-result-text').textContent = `Вы забрали ${winnings} сек. (множитель ${minesState.multiplier.toFixed(2)}x)`;
+        } else {
+            document.getElementById('mines-result-title').textContent = '💥 Бабах!';
+            document.getElementById('mines-result-title').style.color = '#ff5252';
+            document.getElementById('mines-result-text').textContent = `Вы потеряли ${minesState.bet} сек. Повезёт в следующий раз!`;
+        }
+    }
+
+    function resetMinesGame() {
+        minesState.gameActive = false;
+        minesState.openedCells = [];
+        minesState.multiplier = 1.0;
+        document.getElementById('mines-setup').style.display = 'block';
+        document.getElementById('mines-game').style.display = 'none';
+        document.getElementById('mines-result').style.display = 'none';
+    }
+
+    function closeMinesModal() {
+        if (minesState.gameActive) {
+            cashoutMines();
+        }
+        closeModal('mines-modal');
+        resetMinesGame();
     }
 
     // Инициализация
